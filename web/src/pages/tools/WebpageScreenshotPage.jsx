@@ -16,7 +16,7 @@ export default function WebpageScreenshotPage() {
   const [delaySec, setDelaySec] = useState("3");
   const [quality, setQuality] = useState("");
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState({ message: "Ready.", hidden: false });
+  const [toast, setToast] = useState({ message: "", hidden: true });
 
   const onSubmit = async (e) => {
     e.preventDefault();

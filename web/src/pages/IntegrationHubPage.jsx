@@ -92,6 +92,17 @@ export default function IntegrationHubPage() {
                 <h1 className="dash__title">Dashboard</h1>
                 <p className="dash__subtitle">Choose a tool on the left.</p>
               </div>
+              <div className="dash__sidebar-actions" aria-label="Account navigation">
+                <button type="button" className="dash__btn dash__btn--icon" onClick={() => navigate("/profile")}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path
+                      fill="currentColor"
+                      d="M12 12a4.25 4.25 0 1 0 0-8.5A4.25 4.25 0 0 0 12 12Zm0 2.25c-4.2 0-7.75 2.18-7.75 5.25 0 .83.67 1.5 1.5 1.5h12.5c.83 0 1.5-.67 1.5-1.5 0-3.07-3.55-5.25-7.75-5.25Z"
+                    />
+                  </svg>
+                  Profile
+                </button>
+              </div>
             </header>
 
             <div className="dash__content">

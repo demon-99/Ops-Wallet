@@ -18,7 +18,7 @@ export default function RemoveBackgroundPage() {
   const [file, setFile] = useState(null);
   const [outputName, setOutputName] = useState("no-background.png");
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState({ message: "Ready.", hidden: false });
+  const [toast, setToast] = useState({ message: "", hidden: true });
   const [dragOver, setDragOver] = useState(false);
 
   const extOk = (name) => /\.(webp|jpe?g|png|bmp|gif|tiff?)$/i.test(name || "");

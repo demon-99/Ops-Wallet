@@ -16,7 +16,7 @@ export default function BarcodePage() {
   const [content, setContent] = useState("https://apyhub.com");
   const [outputName, setOutputName] = useState("barcode.png");
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState({ message: "Ready.", hidden: false });
+  const [toast, setToast] = useState({ message: "", hidden: true });
 
   const onSubmit = async (e) => {
     e.preventDefault();

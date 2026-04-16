@@ -58,7 +58,7 @@ export default function AuthPage() {
   const navigate = useNavigate();
 
   const [mode, setMode] = useState(() => (window.location.hash.replace("#", "") === "signup" ? "signup" : "login"));
-  const [toast, setToast] = useState({ message: "Ready.", hidden: false });
+  const [toast, setToast] = useState({ message: "", hidden: true });
   const [showPw, setShowPw] = useState({ login: false, signup: false, signupConfirm: false });
 
   const loginEmailRef = useRef(null);

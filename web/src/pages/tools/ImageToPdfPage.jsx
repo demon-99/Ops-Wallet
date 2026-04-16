@@ -17,7 +17,7 @@ export default function ImageToPdfPage() {
   const [outputName, setOutputName] = useState("output.pdf");
   const [landscape, setLandscape] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState({ message: "Ready.", hidden: false });
+  const [toast, setToast] = useState({ message: "", hidden: true });
   const [dragOver, setDragOver] = useState(false);
 
   const onPickFile = (f) => {
