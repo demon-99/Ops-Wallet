@@ -1,0 +1,5 @@
+# Copy this file to application-local.properties in this same folder, then set your real token.
+# application-local.properties is gitignored — do not commit it.
+#
+# No quotes around the token value.
+apyhub.token=
