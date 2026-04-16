@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DigitalBackground from "./components/DigitalBackground.jsx";
 import { isUserServiceError, useAuth } from "./auth/AuthContext.jsx";
+import gsap from "gsap";
+import logoUrl from "./assets/opswallet-logo.png";
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -68,6 +70,13 @@ export default function AuthPage() {
     if (auth.status === "loading") return;
     if (auth.isAuthenticated) navigate("/integrations", { replace: true });
   }, [auth.status, auth.isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
+    const shell = document.querySelector(".auth__shell");
+    if (!shell) return;
+    gsap.fromTo(shell, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" });
+  }, []);
 
   const [login, setLogin] = useState({ email: "", password: "", remember: true });
   const [signup, setSignup] = useState({
@@ -175,7 +184,7 @@ export default function AuthPage() {
           <div className="auth__shell" data-mode={mode}>
             <header className="auth__header">
               <div className="brand" aria-label="Brand">
-                <div className="brand__mark" aria-hidden="true"></div>
+                <img className="brand__logo" src={logoUrl} alt="OpsWallet" />
                 <div className="brand__text">
                   <div className="brand__name">OpsWallet</div>
                   <div className="brand__tag">Your ops tools, one place</div>

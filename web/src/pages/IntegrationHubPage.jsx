@@ -1,17 +1,29 @@
-import { Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import gsap from "gsap";
 import DigitalBackground from "../components/DigitalBackground.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
+import logoUrl from "../assets/opswallet-logo.png";
 import ImageToPdfPage from "./tools/ImageToPdfPage.jsx";
 import RemoveBackgroundPage from "./tools/RemoveBackgroundPage.jsx";
 import BarcodePage from "./tools/BarcodePage.jsx";
 import WebpageScreenshotPage from "./tools/WebpageScreenshotPage.jsx";
 import ComingSoonToolPage from "./tools/ComingSoonToolPage.jsx";
+import HtmlToPdfPage from "./tools/HtmlToPdfPage.jsx";
 
 export default function IntegrationHubPage() {
   const auth = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const displayName = [auth.user?.firstName, auth.user?.lastName].filter(Boolean).join(" ") || auth.user?.email || "User";
+
+  useEffect(() => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
+    const main = document.querySelector(".dash__content");
+    if (!main) return;
+    gsap.fromTo(main, { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" });
+  }, [location.pathname]);
 
   const onLogout = async () => {
     await auth.logout();
@@ -30,44 +42,73 @@ export default function IntegrationHubPage() {
         <div className="dash" id="dash-main">
           <aside className="dash__sidebar" aria-label="Integrations navigation">
             <div className="dash__brand">
-              <div className="brand__mark" aria-hidden="true"></div>
+              <img className="brand__logo" src={logoUrl} alt="OpsWallet" />
               <div className="dash__brand-text">
                 <div className="dash__brand-title">OpsWallet</div>
                 <div className="dash__brand-subtitle">Integrations</div>
               </div>
             </div>
 
-            <nav className="dash__nav">
-              <NavLink
-                className={({ isActive }) => `dash__link ${isActive ? "dash__link--active" : ""}`}
-                to="/integrations/image-to-pdf"
-              >
-                Image to PDF
-              </NavLink>
-              <NavLink
-                className={({ isActive }) => `dash__link ${isActive ? "dash__link--active" : ""}`}
-                to="/integrations/remove-background"
-              >
-                Remove background
-              </NavLink>
-              <NavLink
-                className={({ isActive }) => `dash__link ${isActive ? "dash__link--active" : ""}`}
-                to="/integrations/barcode"
-              >
-                Barcode
-              </NavLink>
-              <NavLink
-                className={({ isActive }) => `dash__link ${isActive ? "dash__link--active" : ""}`}
-                to="/integrations/webpage-screenshot"
-              >
-                Webpage screenshot
-              </NavLink>
-              <NavLink
-                className={({ isActive }) => `dash__link ${isActive ? "dash__link--active" : ""}`}
-                to="/integrations/youtube-audio"
-              >
-                Download YouTube audio
-              </NavLink>
+            <nav className="dash__nav" aria-label="Tools">
+              <details className="dash__section">
+                <summary className="dash__sectionTitle">PDF</summary>
+                <div className="dash__sectionBody">
+                  <NavLink
+                    className={({ isActive }) => `dash__link ${isActive ? "dash__link--active" : ""}`}
+                    to="/integrations/image-to-pdf"
+                  >
+                    Image to PDF
+                  </NavLink>
+                  <NavLink
+                    className={({ isActive }) => `dash__link ${isActive ? "dash__link--active" : ""}`}
+                    to="/integrations/html-to-pdf"
+                  >
+                    HTML to PDF
+                  </NavLink>
+                </div>
+              </details>
+
+              <details className="dash__section">
+                <summary className="dash__sectionTitle">Images</summary>
+                <div className="dash__sectionBody">
+                  <NavLink
+                    className={({ isActive }) => `dash__link ${isActive ? "dash__link--active" : ""}`}
+                    to="/integrations/remove-background"
+                  >
+                    Remove background
+                  </NavLink>
+                  <NavLink
+                    className={({ isActive }) => `dash__link ${isActive ? "dash__link--active" : ""}`}
+                    to="/integrations/barcode"
+                  >
+                    Barcode
+                  </NavLink>
+                </div>
+              </details>
+
+              <details className="dash__section">
+                <summary className="dash__sectionTitle">Web</summary>
+                <div className="dash__sectionBody">
+                  <NavLink
+                    className={({ isActive }) => `dash__link ${isActive ? "dash__link--active" : ""}`}
+                    to="/integrations/webpage-screenshot"
+                  >
+                    Webpage screenshot
+                  </NavLink>
+                </div>
+              </details>
+
+              <details className="dash__section">
+                <summary className="dash__sectionTitle">Media</summary>
+                <div className="dash__sectionBody">
+                  <NavLink
+                    className={({ isActive }) => `dash__link ${isActive ? "dash__link--active" : ""}`}
+                    to="/integrations/youtube-audio"
+                  >
+                    Download YouTube audio
+                  </NavLink>
+                </div>
+              </details>
             </nav>
 
             <div className="dash__sidebar-footer">
@@ -109,6 +150,7 @@ export default function IntegrationHubPage() {
               <Routes>
                 <Route index element={<Navigate to="image-to-pdf" replace />} />
                 <Route path="image-to-pdf" element={<div className="dash__grid"><ImageToPdfPage /></div>} />
+                <Route path="html-to-pdf" element={<div className="dash__grid"><HtmlToPdfPage /></div>} />
                 <Route
                   path="remove-background"
                   element={

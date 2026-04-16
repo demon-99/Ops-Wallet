@@ -4,13 +4,15 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import AuthPage from "./AuthPage.jsx";
 import IntegrationsDashboard from "./pages/IntegrationHubPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
+import LandingPage from "./pages/LandingPage.jsx";
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<AuthPage />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route
             path="/integrations/*"
             element={

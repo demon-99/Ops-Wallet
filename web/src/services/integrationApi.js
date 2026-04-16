@@ -46,6 +46,50 @@ export async function convertImageToPdf(file, opts = {}) {
 }
 
 /**
+ * POST multipart to integration_service → PDF bytes.
+ * @param {File} file
+ * @param {{ output?: string, landscape?: boolean, signal?: AbortSignal }} opts
+ * @returns {Promise<{ blob: Blob, filename: string }>}
+ */
+export async function convertHtmlToPdf(file, opts = {}) {
+  const output = opts.output?.trim() || "output.pdf";
+  const landscape = !!opts.landscape;
+  const params = new URLSearchParams({ output, landscape: String(landscape) });
+
+  const form = new FormData();
+  form.append("file", file);
+
+  const res = await fetch(`${base}/api/convert/html-to-pdf?${params}`, {
+    method: "POST",
+    body: form,
+    signal: opts.signal,
+  });
+
+  if (!res.ok) {
+    let msg = `Request failed (${res.status})`;
+    try {
+      const text = await res.text();
+      if (text) {
+        const j = JSON.parse(text);
+        if (typeof j?.message === "string") msg = j.message;
+        else if (typeof j?.detail === "string") msg = j.detail;
+      }
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg);
+  }
+
+  const blob = await res.blob();
+  const cd = res.headers.get("Content-Disposition");
+  let filename = output;
+  const m = cd && /filename\*?=(?:UTF-8''|")?([^";\n]+)/i.exec(cd);
+  if (m?.[1]) filename = decodeURIComponent(m[1].replace(/"/g, "").trim());
+
+  return { blob, filename };
+}
+
+/**
  * POST multipart to integration_service → image bytes (background removed).
  * @param {File} file
  * @param {{ output?: string, signal?: AbortSignal }} opts

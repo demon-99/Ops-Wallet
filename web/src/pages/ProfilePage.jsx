@@ -10,7 +10,7 @@ export default function ProfilePage() {
     [auth.user?.firstName, auth.user?.lastName].filter(Boolean).join(" ") || auth.user?.email || "User";
 
   return (
-    <div className="page integration-page">
+    <div className="page integration-page profile-page">
       <DigitalBackground />
 
       <main className="dash__main" aria-label="Profile content">
