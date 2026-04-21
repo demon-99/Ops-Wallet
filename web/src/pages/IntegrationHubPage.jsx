@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import DigitalBackground from "../components/DigitalBackground.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
+import { useScrollAnimations } from "../hooks/useScrollAnimations.js";
 import logoUrl from "../assets/opswallet-logo.png";
 import ImageToPdfPage from "./tools/ImageToPdfPage.jsx";
 import RemoveBackgroundPage from "./tools/RemoveBackgroundPage.jsx";
@@ -15,6 +16,8 @@ export default function IntegrationHubPage() {
   const auth = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const pageRootRef = useRef(null);
+  useScrollAnimations(pageRootRef, "[data-anim]", [location.pathname]);
 
   const displayName = [auth.user?.firstName, auth.user?.lastName].filter(Boolean).join(" ") || auth.user?.email || "User";
 
@@ -36,17 +39,13 @@ export default function IntegrationHubPage() {
         Skip to content
       </a>
 
-      <div className="page integration-page">
+      <div className="page integration-page" ref={pageRootRef}>
         <DigitalBackground />
 
         <div className="dash" id="dash-main">
           <aside className="dash__sidebar" aria-label="Integrations navigation">
             <div className="dash__brand">
               <img className="brand__logo" src={logoUrl} alt="OpsWallet" />
-              <div className="dash__brand-text">
-                <div className="dash__brand-title">OpsWallet</div>
-                <div className="dash__brand-subtitle">Integrations</div>
-              </div>
             </div>
 
             <nav className="dash__nav" aria-label="Tools">
@@ -128,7 +127,7 @@ export default function IntegrationHubPage() {
           </aside>
 
           <main className="dash__main" aria-label="Tool content">
-            <header className="dash__top">
+            <header className="dash__top" data-anim="fade-up">
               <div>
                 <h1 className="dash__title">Dashboard</h1>
                 <p className="dash__subtitle">Choose a tool on the left.</p>

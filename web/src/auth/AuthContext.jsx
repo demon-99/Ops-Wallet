@@ -4,23 +4,39 @@ import { UserServiceError, userService as defaultUserService } from "../services
 const AuthContext = createContext(null);
 
 export function AuthProvider({ service = defaultUserService, children }) {
-  const [status, setStatus] = useState("idle"); // idle | loading | authed
+  // Start in "loading" so UI can gate itself until we've checked for a
+  // cached session. Without this, the initial render has status "idle" +
+  // user null, so the auth page flashes its form before we redirect a
+  // returning user to the dashboard.
+  const [status, setStatus] = useState("loading"); // loading | idle | authed
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     let mounted = true;
     setStatus("loading");
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.log("[auth] checking stored session…");
+    }
     service
       .getCurrentUser?.()
       .then((u) => {
         if (!mounted) return;
         setUser(u ?? null);
         setStatus(u ? "authed" : "idle");
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.log("[auth] session check resolved:", u ? `authed as ${u.email}` : "no session");
+        }
       })
-      .catch(() => {
+      .catch((err) => {
         if (!mounted) return;
         setUser(null);
         setStatus("idle");
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.warn("[auth] session check failed:", err);
+        }
       });
     return () => {
       mounted = false;

@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DigitalBackground from "./components/DigitalBackground.jsx";
+import ShaderOverlay from "./components/ShaderOverlay.jsx";
 import { isUserServiceError, useAuth } from "./auth/AuthContext.jsx";
 import gsap from "gsap";
 import logoUrl from "./assets/opswallet-logo.png";
+import { useScrollAnimations } from "./hooks/useScrollAnimations.js";
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -59,16 +61,51 @@ export default function AuthPage() {
   const auth = useAuth();
   const navigate = useNavigate();
 
+  // Dev escape hatch: `/auth?clearSession=1` wipes any cached login so you
+  // can actually see the login form without digging through DevTools.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("clearSession") === "1") {
+      try {
+        localStorage.removeItem("newproduct.auth.v1");
+        // eslint-disable-next-line no-console
+        console.log("[auth] cleared stored session via ?clearSession=1");
+      } catch {
+        /* localStorage may be unavailable; ignore */
+      }
+      // Reload without the query param so refreshes don't keep wiping it.
+      const url = new URL(window.location.href);
+      url.searchParams.delete("clearSession");
+      window.location.replace(url.toString());
+    }
+  }, []);
+
+  // Trace every render so it's obvious in DevTools what branch we're in.
+  if (import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
+    console.log("[auth-page] render — status:", auth.status, "authed:", auth.isAuthenticated);
+  }
+
   const [mode, setMode] = useState(() => (window.location.hash.replace("#", "") === "signup" ? "signup" : "login"));
   const [toast, setToast] = useState({ message: "", hidden: true });
   const [showPw, setShowPw] = useState({ login: false, signup: false, signupConfirm: false });
 
   const loginEmailRef = useRef(null);
   const signupFirstRef = useRef(null);
+  const authRootRef = useRef(null);
+  // Re-run when auth status changes so the form's entry animations still
+  // trigger after the "checking session" loader unmounts.
+  useScrollAnimations(authRootRef, "[data-anim]", [auth.status]);
 
   useEffect(() => {
     if (auth.status === "loading") return;
-    if (auth.isAuthenticated) navigate("/integrations", { replace: true });
+    if (auth.isAuthenticated) {
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.log("[auth-page] authed — redirecting to /integrations");
+      }
+      navigate("/integrations", { replace: true });
+    }
   }, [auth.status, auth.isAuthenticated, navigate]);
 
   useEffect(() => {
@@ -79,6 +116,26 @@ export default function AuthPage() {
   }, []);
 
   const [login, setLogin] = useState({ email: "", password: "", remember: true });
+  const [robotCheck, setRobotCheck] = useState({ verified: false, verifying: false });
+  const robotTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (robotTimerRef.current) clearTimeout(robotTimerRef.current);
+    };
+  }, []);
+
+  const verifyNotRobot = () => {
+    if (robotCheck.verifying) return;
+    if (robotCheck.verified) {
+      setRobotCheck({ verified: false, verifying: false });
+      return;
+    }
+    setRobotCheck({ verified: false, verifying: true });
+    robotTimerRef.current = setTimeout(() => {
+      setRobotCheck({ verified: true, verifying: false });
+    }, 900);
+  };
   const [signup, setSignup] = useState({
     firstName: "",
     lastName: "",
@@ -132,6 +189,10 @@ export default function AuthPage() {
       setToast({ message: "Fix the highlighted fields, then try again.", hidden: false });
       return;
     }
+    if (!robotCheck.verified) {
+      setToast({ message: "Please verify that you are not a robot.", hidden: false });
+      return;
+    }
     setToast({ message: "Logging in…", hidden: false });
     try {
       await auth.login({ email: login.email, password: login.password });
@@ -171,24 +232,42 @@ export default function AuthPage() {
     }
   };
 
+  // While AuthContext is resolving a cached session, or if the user is
+  // already authed (and is about to be redirected by the effect above),
+  // don't render the form at all — otherwise it flashes on screen for a
+  // few hundred milliseconds before the redirect fires.
+  if (auth.status === "loading" || auth.isAuthenticated) {
+    return (
+      <main className="page authLoading" aria-busy="true" aria-live="polite">
+        <DigitalBackground />
+        <div className="authLoading__spinner" aria-hidden="true" />
+        <span className="visually-hidden">Checking your session…</span>
+      </main>
+    );
+  }
+
   return (
     <>
       <a className="skip-link" href="#auth">
         Skip to content
       </a>
 
-      <main className="page">
+      <main className="page" ref={authRootRef}>
         <DigitalBackground />
+        <ShaderOverlay
+          colorA="#7c3aed"
+          colorB="#22d3ee"
+          colorC="#0b0e24"
+          intensity={0.55}
+          opacity={0.35}
+          blendMode="screen"
+        />
 
         <section className="auth" id="auth" aria-label="Authentication">
           <div className="auth__shell" data-mode={mode}>
             <header className="auth__header">
               <div className="brand" aria-label="Brand">
                 <img className="brand__logo" src={logoUrl} alt="OpsWallet" />
-                <div className="brand__text">
-                  <div className="brand__name">OpsWallet</div>
-                  <div className="brand__tag">Your ops tools, one place</div>
-                </div>
               </div>
 
               <div className="auth__tabs" role="tablist" aria-label="Login or sign up">
@@ -297,6 +376,49 @@ export default function AuthPage() {
                       <a className="link" href="#" aria-label="Reset password">
                         Forgot password?
                       </a>
+                    </div>
+
+                    <div
+                      className="captcha"
+                      data-state={
+                        robotCheck.verified ? "verified" : robotCheck.verifying ? "verifying" : "idle"
+                      }
+                    >
+                      <button
+                        type="button"
+                        className="captcha__box"
+                        role="checkbox"
+                        aria-checked={robotCheck.verified ? "true" : "false"}
+                        aria-busy={robotCheck.verifying ? "true" : "false"}
+                        aria-label="I'm not a robot"
+                        onClick={verifyNotRobot}
+                        disabled={robotCheck.verifying}
+                      >
+                        {robotCheck.verifying ? (
+                          <span className="captcha__spinner" aria-hidden="true"></span>
+                        ) : robotCheck.verified ? (
+                          <svg
+                            className="captcha__check"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <polyline points="4 12 10 18 20 6" />
+                          </svg>
+                        ) : null}
+                      </button>
+                      <span className="captcha__label">I'm not a robot</span>
+                      <div className="captcha__brand" aria-hidden="true">
+                        <div className="captcha__brandMark">ow</div>
+                        <div className="captcha__brandText">
+                          <div>OpsWallet</div>
+                          <div className="captcha__brandSub">Privacy · Terms</div>
+                        </div>
+                      </div>
                     </div>
 
                     <button className="primary" type="submit">
@@ -507,7 +629,7 @@ export default function AuthPage() {
               </div>
 
               <aside className="side" aria-label="Highlights">
-                <div className="side__card">
+                <div className="side__card" data-anim="fade-up" data-anim-delay="0.05">
                   <h2 className="side__title">Designed for production</h2>
                   <ul className="side__list">
                     <li>Accessible focus rings and ARIA tabs</li>
@@ -517,7 +639,7 @@ export default function AuthPage() {
                   </ul>
                 </div>
 
-                <div className="side__card side__card--mini">
+                <div className="side__card side__card--mini" data-anim="fade-up" data-anim-delay="0.15">
                   <div className="badge">Live</div>
                   <div className="stat">
                     <div className="stat__label">Uptime</div>
