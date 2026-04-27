@@ -4601,3 +4601,34 @@ kbd {
   }
 }
 
+/* ------------------------------------------------------------
+   Profile page layout fix.
+
+   `.page` is a centering grid (`display:grid; place-items:center`).
+   That makes sense for the auth card, but on the profile page the
+   <main> and <footer> end up as narrow centered grid cells, which
+   causes `.landing3d__footerRow` (a flex row) to wrap and the footer
+   to appear much taller than on the landing page. Switch the profile
+   page to a stretched column so the footer behaves the same as it
+   does inside `.landing3d`.
+------------------------------------------------------------ */
+.page.profile-page {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+}
+
+.page.profile-page > .dash__main {
+  width: 100%;
+  flex: 1 1 auto;
+}
+
+/* Footer spans full width (the shared `.landing3d__container` inside
+   already applies the correct horizontal padding). */
+.page.profile-page > .landing3d__footer {
+  width: 100%;
+  margin-top: 0;
+}
+

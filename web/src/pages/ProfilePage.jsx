@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import DigitalBackground from "../components/DigitalBackground.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
+import logoUrl from "../assets/opswallet-logo.png";
 
 export default function ProfilePage() {
   const auth = useAuth();
@@ -57,7 +58,21 @@ export default function ProfilePage() {
           </section>
         </div>
       </main>
+      <footer className="landing3d__footer">
+          <div className="landing3d__container landing3d__footerRow">
+            <div className="landing3d__footerBrand">
+              <img className="brand__logo" src={logoUrl} alt="OpsWallet" />
+              <span>© {new Date().getFullYear()} OpsWallet</span>
+            </div>
+            <div className="landing3d__footerLinks">
+              <a href="#features">Features</a>
+              <a href="#integrations">Integrations</a>
+              <a href="#metrics">Metrics</a>
+            </div>
+          </div>
+      </footer>
     </div>
+    
   );
 }
 

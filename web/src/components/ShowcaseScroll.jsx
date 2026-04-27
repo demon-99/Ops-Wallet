@@ -116,11 +116,11 @@ export default function ShowcaseScroll({ steps = DEFAULT_STEPS }) {
     >
       <div ref={pinRef} className="showcase__pin">
         <div className="showcase__canvasWrap" aria-hidden="true">
-          {/* <Suspense fallback={<div className="showcase__fallback" />}>
+          <Suspense fallback={<div className="showcase__fallback" />}>
             <SceneCanvas camera={{ fov: 42, position: [0, 0.3, 6.2], near: 0.1, far: 50 }}>
               <ShowcaseScene progress={progressRef} mouse={mouseRef} />
             </SceneCanvas>
-          </Suspense> */}
+          </Suspense>
         </div>
 
         <div className="showcase__content">
