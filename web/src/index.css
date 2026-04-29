@@ -4633,6 +4633,390 @@ kbd {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   3D Integration Carousel
+   ───────────────────────────────────────────────────────────── */
+.intCarousel {
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 56px 1fr 56px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 4px;
+}
+
+.intCarousel__stage {
+  position: relative;
+  height: 380px;
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+  overflow: hidden;
+  border-radius: 28px;
+  outline: none;
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+}
+.intCarousel__stage:active {
+  cursor: grabbing;
+}
+.intCarousel__stage:focus-visible {
+  box-shadow: var(--ring);
+}
+
+.intCarousel__track {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  display: grid;
+  place-items: center;
+}
+
+.intCarousel__card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(240px, 28vw, 340px);
+  height: 280px;
+  margin: -140px 0 0 -160px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.40),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  transition:
+    transform 620ms cubic-bezier(0.22, 0.9, 0.2, 1),
+    opacity 420ms ease,
+    box-shadow 420ms ease,
+    border-color 420ms ease,
+    background 420ms ease;
+  will-change: transform, opacity;
+}
+
+.intCarousel__card:focus-visible {
+  outline: none;
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.40),
+    var(--ring);
+}
+
+.intCarousel__card--active {
+  border-color: rgba(34, 211, 238, 0.45);
+  box-shadow:
+    0 30px 90px rgba(34, 211, 238, 0.22),
+    0 30px 90px rgba(124, 58, 237, 0.18),
+    0 0 0 1px rgba(34, 211, 238, 0.20) inset;
+}
+
+.intCarousel__cardGlow {
+  position: absolute;
+  inset: -1px;
+  background: radial-gradient(
+      400px 240px at 30% 20%,
+      rgba(34, 211, 238, 0.30),
+      transparent 60%
+    ),
+    radial-gradient(
+      400px 240px at 70% 80%,
+      rgba(124, 58, 237, 0.28),
+      transparent 65%
+    );
+  opacity: 0;
+  transition: opacity 420ms ease;
+  pointer-events: none;
+}
+
+.intCarousel__card--active .intCarousel__cardGlow {
+  opacity: 1;
+}
+
+.intCarousel__cardSheen {
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.18) 48%,
+    transparent 60%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+
+.intCarousel__card--active .intCarousel__cardSheen {
+  animation: intCardSheen 2400ms ease-in-out 250ms 1 forwards;
+}
+
+@keyframes intCardSheen {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+.intCarousel__cardContent {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 12px;
+  padding: 22px 22px 20px;
+}
+
+.intCarousel__cardTitle {
+  font-size: clamp(18px, 1.6vw, 22px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.96);
+  display: block;
+  overflow: hidden;
+}
+
+.intCarousel__cardBody {
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.72);
+  display: block;
+}
+
+/* Word-level animation primitive used by AnimatedWords. */
+.intCarousel__word {
+  display: inline-block;
+  white-space: pre;
+  opacity: 0;
+  transform: translateY(14px) rotateX(-25deg);
+  transform-origin: 50% 100%;
+  filter: blur(4px);
+  animation: intWordIn 700ms cubic-bezier(0.22, 0.9, 0.2, 1) both;
+  will-change: transform, opacity, filter;
+}
+
+/* Title words pick up a subtle gradient sheen as they animate in. */
+.intCarousel__cardTitle .intCarousel__word {
+  background: linear-gradient(
+    92deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(34, 211, 238, 0.95) 60%,
+    rgba(124, 58, 237, 0.95) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Only animate when the card is active. Idle cards are static. */
+.intCarousel__cardContent[data-active="false"] .intCarousel__word,
+.intCarousel__cardContent[data-active="false"] .intCarousel__cardCta {
+  animation: none;
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+@keyframes intWordIn {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) rotateX(-25deg);
+    filter: blur(4px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+    filter: blur(0);
+  }
+}
+
+.intCarousel__cardCta {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(34, 211, 238, 0.95);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: intCtaIn 520ms cubic-bezier(0.22, 0.9, 0.2, 1) both;
+}
+.intCarousel__cardCta span {
+  display: inline-block;
+  transition: transform 280ms ease;
+}
+.intCarousel__card--active:hover .intCarousel__cardCta span {
+  transform: translateX(4px);
+}
+
+@keyframes intCtaIn {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.intCarousel__nav {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(10, 12, 22, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  font-size: 26px;
+  line-height: 0;
+  display: grid;
+  place-items: center;
+  transition: transform 200ms ease, background 200ms ease,
+    border-color 200ms ease;
+  z-index: 5;
+}
+.intCarousel__nav:hover {
+  background: rgba(10, 12, 22, 0.78);
+  border-color: rgba(34, 211, 238, 0.45);
+  transform: scale(1.06);
+}
+.intCarousel__nav:active {
+  transform: scale(0.98);
+}
+.intCarousel__nav:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+.intCarousel__nav--prev { justify-self: end; }
+.intCarousel__nav--next { justify-self: start; }
+
+.intCarousel__dots {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.intCarousel__dot {
+  width: 22px;
+  height: 4px;
+  border-radius: 999px;
+  border: 0;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  transition: background 240ms ease, width 240ms ease;
+}
+.intCarousel__dot:hover {
+  background: rgba(255, 255, 255, 0.30);
+}
+.intCarousel__dot--active {
+  width: 36px;
+  background: linear-gradient(90deg, #22d3ee, #7c3aed);
+}
+.intCarousel__dot:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+@media (max-width: 720px) {
+  .intCarousel {
+    grid-template-columns: 44px 1fr 44px;
+    gap: 6px;
+  }
+  .intCarousel__stage {
+    height: 340px;
+    perspective: 1100px;
+  }
+  .intCarousel__card {
+    width: clamp(220px, 80vw, 320px);
+    height: 260px;
+    margin: -130px 0 0 -150px;
+  }
+  .intCarousel__nav {
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intCarousel__card {
+    transition: opacity 200ms ease;
+  }
+  .intCarousel__cardSheen,
+  .intCarousel__word,
+  .intCarousel__cardCta {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* Light theme overrides for the carousel */
+html[data-theme="light"] .intCarousel__card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.78));
+  border-color: rgba(15, 18, 32, 0.10);
+  box-shadow:
+    0 22px 60px rgba(15, 18, 32, 0.14),
+    0 0 0 1px rgba(15, 18, 32, 0.04) inset;
+}
+html[data-theme="light"] .intCarousel__card--active {
+  border-color: rgba(124, 58, 237, 0.40);
+  box-shadow:
+    0 28px 80px rgba(124, 58, 237, 0.20),
+    0 28px 80px rgba(34, 211, 238, 0.14),
+    0 0 0 1px rgba(124, 58, 237, 0.18) inset;
+}
+html[data-theme="light"] .intCarousel__cardTitle {
+  color: rgba(15, 18, 32, 0.96);
+}
+html[data-theme="light"] .intCarousel__cardTitle .intCarousel__word {
+  background: linear-gradient(
+    92deg,
+    rgba(15, 18, 32, 0.96) 0%,
+    rgba(124, 58, 237, 0.95) 60%,
+    rgba(34, 211, 238, 0.95) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+html[data-theme="light"] .intCarousel__cardBody {
+  color: rgba(15, 18, 32, 0.66);
+}
+html[data-theme="light"] .intCarousel__cardCta {
+  color: rgba(124, 58, 237, 0.95);
+}
+html[data-theme="light"] .intCarousel__nav {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(15, 18, 32, 0.10);
+  color: rgba(15, 18, 32, 0.92);
+}
+html[data-theme="light"] .intCarousel__nav:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(124, 58, 237, 0.40);
+}
+html[data-theme="light"] .intCarousel__dot {
+  background: rgba(15, 18, 32, 0.18);
+}
+html[data-theme="light"] .intCarousel__dot:hover {
+  background: rgba(15, 18, 32, 0.32);
+}
+
+/* ─────────────────────────────────────────────────────────────
    Top-right floating menu (mobile hamburger + desktop toggle)
    ───────────────────────────────────────────────────────────── */
 .mobileMenu {

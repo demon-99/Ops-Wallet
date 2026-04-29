@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import logoUrl from "../assets/opswallet-logo.png";
 import Hero3D from "../components/Hero3D.jsx";
+import IntegrationCarousel from "../components/IntegrationCarousel.jsx";
 import ShowcaseScroll from "../components/ShowcaseScroll.jsx";
 import { useSmoothScroll } from "../hooks/useSmoothScroll.js";
 import { useScrollAnimations } from "../hooks/useScrollAnimations.js";
@@ -154,46 +155,10 @@ export default function LandingPage() {
             </p>
           </header>
 
-          <div className="landing3d__integrations">
-            {INTEGRATIONS.map((it, i) => {
-              const onPointer = (e) => {
-                const el = e.currentTarget;
-                const rect = el.getBoundingClientRect();
-                const gx = ((e.clientX - rect.left) / rect.width) * 100;
-                const gy = ((e.clientY - rect.top) / rect.height) * 100;
-                el.style.setProperty("--gx", `${gx}%`);
-                el.style.setProperty("--gy", `${gy}%`);
-                // Tilt toward the cursor; CSS reads --tx/--ty for the transform.
-                const tx = (gx - 50) / 50;
-                const ty = (gy - 50) / 50;
-                el.style.setProperty("--tx", `${tx}`);
-                el.style.setProperty("--ty", `${ty}`);
-              };
-              const onLeave = (e) => {
-                const el = e.currentTarget;
-                el.style.setProperty("--tx", "0");
-                el.style.setProperty("--ty", "0");
-              };
-              return (
-                <button
-                  key={it.title}
-                  type="button"
-                  className="landing3d__integration"
-                  data-anim="fade-up"
-                  data-anim-delay={(i % 3) * 0.08}
-                  onPointerMove={onPointer}
-                  onPointerLeave={onLeave}
-                  onClick={() => navigate(it.to)}
-                >
-                  <div className="landing3d__integrationGlow" aria-hidden="true" />
-                  <div className="landing3d__integrationSheen" aria-hidden="true" />
-                  <div className="landing3d__integrationTitle">{it.title}</div>
-                  <div className="landing3d__integrationBody">{it.blurb}</div>
-                  <div className="landing3d__integrationArrow" aria-hidden="true">→</div>
-                </button>
-              );
-            })}
-          </div>
+          <IntegrationCarousel
+            items={INTEGRATIONS}
+            onSelect={(it) => navigate(it.to)}
+          />
         </div>
       </section>
 
